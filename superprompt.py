@@ -3,6 +3,7 @@
 from typing import Any, Dict, Iterable, Mapping, Optional, Union
 
 from questionary import confirm, prompt
+from questionary import unsafe_prompt as _unsafe_prompt
 from questionary.constants import DEFAULT_KBI_MESSAGE
 from questionary.prompt import PromptParameterException
 from questionary.prompts.common import print_formatted_text
@@ -14,6 +15,7 @@ def superprompt(
     patch_stdout: bool = False,
     true_color: bool = False,
     kbi_msg: str = DEFAULT_KBI_MESSAGE,
+    unsafe_prompt: bool = False,
     **kwargs: Any,
 ) -> Dict[str, Any]:
     """Prompt the user for input on all the questions.
@@ -180,9 +182,14 @@ def superprompt(
         # ordinary question, call prompt
         # remove keys that prompt doesn't understand
         question_config.pop("questions", None)
-        answers = prompt(
-            question_config, answers, patch_stdout, true_color, kbi_msg, **kwargs
-        )
+        if unsafe_prompt:
+            answers = _unsafe_prompt(
+                question_config, answers, patch_stdout, true_color, **kwargs
+            )
+        else:
+            answers = prompt(
+                question_config, answers, patch_stdout, true_color, kbi_msg, **kwargs
+            )
 
         # handle "if" condition
         if _if:
